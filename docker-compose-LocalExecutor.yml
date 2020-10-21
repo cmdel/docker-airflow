@@ -1,31 +1,25 @@
 version: '3.7'
 services:
-    postgres:
-        image: postgres:9.6
-        environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
-        logging:
-            options:
-                max-size: 10m
-                max-file: "3"
-
     webserver:
         image: christosdelivorias/docker-airflow:1.10.12
         restart: always
-        depends_on:
-            - postgres
+        depends_on: 
+            - git-sync-clone
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - REDIS_PASSWORD=redispass
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            # - ./plugins:/usr/local/airflow/plugins
+            - git-volume/git-repo/dags:/usr/local/airflow/dags
+            - git-volume/git-repo/plugins:/usr/local/airflow/plugins
+            - ./config/airflow.cfg://usr/loca/airflow/airflow.cfg
         ports:
             - "8080:8080"
         command: webserver
@@ -34,3 +28,23 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
+
+    git-sync-clone:
+        image: christosdelivorias/git-sync:latest
+        restart: always
+        environment: 
+            - GIT_SYNC_REPO: "https://github.com/xyz/dags-airflow"
+            - GIT_SYNC_BRANCH: "master"
+            - GIT_SYNC_ROOT: "/git"
+            - GIT_SYNC_DEST: ""
+            - GIT_SYNC_DEPTH: "1"
+            - GIT_SYNC_ONE_TIME: "false"
+            - GIT_SYNC_ONE_WAIT: "60"
+            - GIT_SYNC_ONE_USERNAME: ""
+            - GIT_KNOWN_HOSTS: "false"
+            - GIT_SYNC_ONE_PASSWORD: ""
+        volumes: 
+            - git-volume/git-repo:/git
+
+volumes:
+    git-volume:
