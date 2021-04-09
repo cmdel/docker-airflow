@@ -1,1 +1,2 @@
 pandas_market_calendars
+apache-airflow-upgrade-check
