@@ -1,7 +1,7 @@
 version: '3.7'
 services:
     webserver:
-        image: christosdelivorias/docker-airflow:1.10.14
+        image: christosdelivorias/docker-airflow:1.10.15
         restart: always
         depends_on: 
             - git-sync-clone
